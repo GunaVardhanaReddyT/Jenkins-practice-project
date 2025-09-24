@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function App() {
-  const baseUrl = "http://localhost:2030/blogapp-b/api/blogs";
+  const baseUrl = "http://localhost:2030/blogapp-b-0.0.1-SNAPSHOT/api/blogs";
   const [blogs, setBlogs] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
