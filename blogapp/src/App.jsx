@@ -2,15 +2,19 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function App() {
-  const baseUrl = "http://localhost:2030/blogapp-b-0.0.1-SNAPSHOT/api/blogs";
+  const baseUrl = "http://localhost:2030/blogapp-b-0.0.1-SNAPSHOT/api/blogs"; // ✅ Correct URL
   const [blogs, setBlogs] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editId, setEditId] = useState(null);
 
   const fetchBlogs = async () => {
-    const res = await axios.get(baseUrl);
-    setBlogs(res.data);
+    try {
+      const res = await axios.get(baseUrl);
+      setBlogs(res.data);
+    } catch (err) {
+      console.error("Error fetching blogs:", err);
+    }
   };
 
   useEffect(() => {
@@ -18,16 +22,20 @@ export default function App() {
   }, []);
 
   const saveBlog = async () => {
-    if (!title || !content) return;
-    if (editId) {
-      await axios.put(`${baseUrl}/${editId}`, { title, content });
-      setEditId(null);
-    } else {
-      await axios.post(baseUrl, { title, content });
+    if (!title.trim() || !content.trim()) return;
+    try {
+      if (editId) {
+        await axios.put(`${baseUrl}/${editId}`, { title, content });
+        setEditId(null);
+      } else {
+        await axios.post(baseUrl, { title, content });
+      }
+      setTitle("");
+      setContent("");
+      fetchBlogs();
+    } catch (err) {
+      console.error("Error saving blog:", err);
     }
-    setTitle("");
-    setContent("");
-    fetchBlogs();
   };
 
   const editBlog = (b) => {
@@ -35,63 +43,76 @@ export default function App() {
     setContent(b.content);
     setEditId(b.id);
   };
+
   const deleteBlog = async (id) => {
-    await axios.delete(`${baseUrl}/${id}`);
-    fetchBlogs();
+    try {
+      await axios.delete(`${baseUrl}/${id}`);
+      fetchBlogs();
+    } catch (err) {
+      console.error("Error deleting blog:", err);
+    }
   };
 
   return (
     <div
       style={{
-        fontFamily: "Arial",
-        maxWidth: "600px",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        maxWidth: "700px",
         margin: "50px auto",
-        padding: "20px",
-        borderRadius: "10px",
-        background: "#f0f4f8",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+        padding: "25px",
+        borderRadius: "12px",
+        background: "#fefefe",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
       }}
     >
-      <h2 style={{ textAlign: "center" }}>Simple Blog</h2>
+      <h2 style={{ textAlign: "center", color: "#333" }}>📝 My Blog App</h2>
 
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "25px" }}>
         <input
           style={{
             width: "100%",
-            padding: "8px",
-            marginBottom: "8px",
-            borderRadius: "5px",
+            padding: "10px",
+            marginBottom: "10px",
+            borderRadius: "6px",
             border: "1px solid #ccc",
+            fontSize: "16px",
           }}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
+          placeholder="Enter blog title"
         />
         <textarea
           style={{
             width: "100%",
-            padding: "8px",
-            borderRadius: "5px",
+            padding: "10px",
+            borderRadius: "6px",
             border: "1px solid #ccc",
-            marginBottom: "8px",
+            marginBottom: "12px",
+            fontSize: "16px",
+            resize: "vertical",
           }}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Content"
-          rows={4}
+          placeholder="Enter blog content"
+          rows={5}
         />
         <button
           style={{
             width: "100%",
-            padding: "10px",
+            padding: "12px",
             border: "none",
-            borderRadius: "5px",
+            borderRadius: "6px",
             background: "#007bff",
             color: "#fff",
+            fontSize: "16px",
+            cursor: "pointer",
+            transition: "background 0.3s",
           }}
           onClick={saveBlog}
+          onMouseOver={(e) => (e.target.style.background = "#0056b3")}
+          onMouseOut={(e) => (e.target.style.background = "#007bff")}
         >
-          {editId ? "Update" : "Add"} Blog
+          {editId ? "Update Blog" : "Add Blog"}
         </button>
       </div>
 
@@ -100,23 +121,24 @@ export default function App() {
           <li
             key={b.id}
             style={{
-              background: "#fff",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "5px",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+              background: "#f9f9f9",
+              padding: "15px",
+              marginBottom: "15px",
+              borderRadius: "8px",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
             }}
           >
-            <h4>{b.title}</h4>
-            <p>{b.content}</p>
+            <h4 style={{ marginBottom: "8px", color: "#007bff" }}>{b.title}</h4>
+            <p style={{ marginBottom: "12px", color: "#555" }}>{b.content}</p>
             <button
               style={{
                 marginRight: "10px",
-                padding: "5px 10px",
+                padding: "6px 12px",
                 borderRadius: "5px",
                 border: "none",
                 background: "#28a745",
                 color: "#fff",
+                cursor: "pointer",
               }}
               onClick={() => editBlog(b)}
             >
@@ -124,11 +146,12 @@ export default function App() {
             </button>
             <button
               style={{
-                padding: "5px 10px",
+                padding: "6px 12px",
                 borderRadius: "5px",
                 border: "none",
                 background: "#dc3545",
                 color: "#fff",
+                cursor: "pointer",
               }}
               onClick={() => deleteBlog(b.id)}
             >
